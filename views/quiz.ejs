@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studify - Quiz</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body id="quiz-page">
+    <div class="container">
+        <div class="quiz-header">
+            <button class="back-btn" onclick="goToRoadmap()">
+                <span class="back-icon">←</span>
+            </button>
+            <h1 class="quiz-title">Course Quiz</h1>
+            <p class="quiz-info">Test your knowledge of the material covered so far</p>
+        </div>
+
+        <div class="quiz-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="questionCounter">Question 1 of 10</span>
+                <span id="scoreCounter">Score: 0/0</span>
+            </div>
+        </div>
+
+        <div class="quiz-content">
+            <div id="quizContainer" class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading quiz questions...</p>
+            </div>
+
+            <div class="quiz-results" id="quizResults">
+                <h2>Quiz Complete!</h2>
+                <div class="score-circle" id="scoreCircle">85%</div>
+                <p class="results-text" id="resultsText">Great job! You got 8 out of 10 questions correct.</p>
+                <button class="retake-btn" onclick="retakeQuiz()">Retake Quiz</button>
+                <button class="retake-btn" onclick="goToRoadmap()" style="margin-left: 15px; background: linear-gradient(135deg, #28a745, #20c997);">Continue Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let quizData = null;
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let score = 0;
+        let showingExplanation = false;
+        let userCourseId = null;
+        let dayNumber = null;
+
+        // Get parameters from URL
+        function getUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            userCourseId = urlParams.get('courseId');
+            dayNumber = urlParams.get('day');
+            return { userCourseId, dayNumber };
+        }
+
+        // Load quiz data from backend
+        async function loadQuizData() {
+            const params = getUrlParams();
+            
+            if (!params.userCourseId || !params.dayNumber) {
+                showError("Missing quiz parameters. Please return to the roadmap and try again.");
+                return;
+            }
+
+            try {
+                console.log(`Loading quiz for course ${params.userCourseId}, day ${params.dayNumber}`);
+                
+                const response = await fetch(`/api/quiz/${params.userCourseId}/${params.dayNumber}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                quizData = await response.json();
+                console.log('Quiz data loaded:', quizData);
+                
+                if (!quizData.questions || quizData.questions.length === 0) {
+                    showError("No questions found for this quiz.");
+                    return;
+                }
+
+                initializeQuiz();
+                
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+                if (error.message.includes('not found')) {
+                    showError("No quiz found for this day. It may not have been generated yet.");
+                } else {
+                    showError(`Failed to load quiz: ${error.message}`);
+                }
+            }
+        }
+
+        function initializeQuiz() {
+            currentQuestion = 0;
+            userAnswers = [];
+            score = 0;
+            showingExplanation = false;
+            
+            document.querySelector('.quiz-title').textContent = quizData.title || 'Course Quiz';
+            document.querySelector('.quiz-info').textContent = `Material covered: ${quizData.day_range || 'This section'}`;
+            
+            displayQuestion();
+            updateProgress();
+        }
+
+        function displayQuestion() {
+            const container = document.getElementById('quizContainer');
+            const question = quizData.questions[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="question-card active">
+                    <div class="question-number">Question ${currentQuestion + 1} of ${quizData.questions.length}</div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="options-container">
+                        ${question.options.map((option, index) => `
+                            <div class="option" onclick="selectOption(${index})">
+                                <span class="option-letter">${String.fromCharCode(65 + index)}.</span>
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="explanation" id="explanation">
+                        <h4>Explanation:</h4>
+                        <p>${question.explanation || 'No explanation available.'}</p>
+                    </div>
+                    <div class="quiz-navigation">
+                        <button class="nav-btn" onclick="previousQuestion()" ${currentQuestion === 0 ? 'disabled' : ''}>
+                            Previous
+                        </button>
+                        <button class="nav-btn" id="nextBtn" onclick="nextQuestion()" disabled>
+                            ${currentQuestion === quizData.questions.length - 1 ? 'Finish Quiz' : 'Next'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Show previous answer if exists
+            if (userAnswers[currentQuestion] !== undefined) {
+                selectOption(userAnswers[currentQuestion], true);
+            }
+        }
+
+        function selectOption(optionIndex, fromPrevious = false) {
+            if (showingExplanation && !fromPrevious) return;
+
+            const options = document.querySelectorAll('.option');
+            const question = quizData.questions[currentQuestion];
+            
+            // Clear previous selections
+            options.forEach(opt => opt.classList.remove('selected', 'correct', 'incorrect'));
+            
+            // Mark selected option
+            options[optionIndex].classList.add('selected');
+            
+            // Store answer
+            if (!fromPrevious) {
+                userAnswers[currentQuestion] = optionIndex;
+            }
+            
+            // Show correct/incorrect after selection
+            if (!fromPrevious) {
+                setTimeout(() => {
+                    options[question.correct_answer].classList.add('correct');
+                    if (optionIndex !== question.correct_answer) {
+                        options[optionIndex].classList.add('incorrect');
+                    }
+                    
+                    document.getElementById('explanation').classList.add('show');
+                    showingExplanation = true;
+                    
+                    // Update score
+                    if (optionIndex === question.correct_answer) {
+                        score++;
+                    }
+                    updateProgress();
+                }, 300);
+            } else {
+                // Just show the selection for previous answers
+                options[question.correct_answer].classList.add('correct');
+                if (optionIndex !== question.correct_answer) {
+                    options[optionIndex].classList.add('incorrect');
+                }
+                document.getElementById('explanation').classList.add('show');
+                showingExplanation = true;
+            }
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < quizData.questions.length - 1) {
+                currentQuestion++;
+                showingExplanation = false;
+                displayQuestion();
+                updateProgress();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showingExplanation = false;
+                displayQuestion();
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / quizData.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('questionCounter').textContent = `Question ${currentQuestion + 1} of ${quizData.questions.length}`;
+            
+            const answeredQuestions = userAnswers.filter(answer => answer !== undefined).length;
+            document.getElementById('scoreCounter').textContent = `Score: ${score}/${answeredQuestions}`;
+        }
+
+        function showResults() {
+            const percentage = Math.round((score / quizData.questions.length) * 100);
+            
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('quizResults').classList.add('show');
+            
+            document.getElementById('scoreCircle').textContent = percentage + '%';
+            document.getElementById('resultsText').textContent = 
+                `You got ${score} out of ${quizData.questions.length} questions correct.`;
+            
+            // Update header
+            document.querySelector('.quiz-info').textContent = 'Quiz completed successfully!';
+
+            // Optional: Save quiz attempt to backend
+            saveQuizAttempt(percentage);
+        }
+
+        // Save quiz attempt (optional)
+        async function saveQuizAttempt(percentage) {
+            try {
+                // This could be implemented later to track quiz attempts
+                console.log(`Quiz completed with ${percentage}% score`);
+            } catch (error) {
+                console.error('Failed to save quiz attempt:', error);
+            }
+        }
+
+        function retakeQuiz() {
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('quizResults').classList.remove('show');
+            initializeQuiz();
+        }
+
+        function goToRoadmap() {
+            if (userCourseId) {
+                window.location.href = `/roadmap?id=${userCourseId}`;
+            } else {
+                window.location.href = '/course-selection';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('quizContainer').innerHTML = `
+                <div class="error-state">
+                    <h3>Quiz Error</h3>
+                    <p>${message}</p>
+                    <button class="nav-btn" onclick="goToRoadmap()" style="margin-top: 20px;">
+                        Back to Roadmap
+                    </button>
+                </div>
+            `;
+        }
+
+        // Initialize quiz when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuizData();
+        });
+    </script>
+
+    <style>
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-state, .error-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .error-state h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #667eea;
+            margin-right: 15px;
+        }
+        
+        .back-btn:hover {
+            color: #5a6fd8;
+        }
+        
+        .quiz-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .option.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .option.correct {
+            background: #e8f5e8;
+            border-color: #4caf50;
+        }
+        
+        .option.incorrect {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+        
+        .explanation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .explanation.show {
+            display: block;
+        }
+        
+        .explanation h4 {
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+        
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .quiz-results {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .quiz-results.show {
+            display: block;
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px auto;
+        }
+    </style>
+</body>
+</html>

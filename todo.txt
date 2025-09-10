@@ -1,0 +1,4 @@
+add the google strategy
+add the rest of the third party strategies stated in the figma
+test the resgiteration
+test the Database in general

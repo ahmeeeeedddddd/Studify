@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studify - Choose Your Plan</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="plans">
+        <!-- Back Button -->
+        <div class="back-button">
+            <div class="back-circle" onclick="goBack()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 12H5M12 19L5 12L12 5" stroke="#FF5722" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Logo Section -->
+        <div class="logo-container">
+            <div class="logo-circle"></div>
+            <span class="logo-text">Studify</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="page-title">Choose Your Plan</h1>
+            
+            <!-- Pricing Cards Container -->
+            <div class="cards-container">
+                <!-- 3 Months Plan -->
+                <div class="pricing-card" data-plan="3months" onclick="selectPlan('3months')">
+                    <div class="plan-duration">3 Months</div>
+                    <div class="plan-price">
+                        <span class="price-amount">7$</span>
+                        <span class="price-period">User/Month</span>
+                    </div>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Ads Free</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Add up to 3 courses</span>
+                        </div>
+                    </div>
+                    <button class="choose-plan-btn" onclick="choosePlan('3months')">Choose Plan</button>
+                </div>
+
+                <!-- 12 Months Plan (Popular) -->
+                <div class="pricing-card popular-card" data-plan="12months" onclick="selectPlan('12months')">
+                    <div class="plan-duration">12 Months</div>
+                    <div class="plan-price">
+                        <span class="price-amount">12$</span>
+                        <span class="price-period">User/Month</span>
+                    </div>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Ads Free</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Unlimited number of courses</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Unlimited number of exam retakes</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>AI assistant chat bot</span>
+                        </div>
+                    </div>
+                    <button class="choose-plan-btn" onclick="choosePlan('12months')">Choose Plan</button>
+                </div>
+
+                <!-- 6 Months Plan -->
+                <div class="pricing-card" data-plan="6months" onclick="selectPlan('6months')">
+                    <div class="plan-duration">6 Months</div>
+                    <div class="plan-price">
+                        <span class="price-amount">9$</span>
+                        <span class="price-period">User/Month</span>
+                    </div>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Ads Free</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Add up to 6 courses</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="check-icon">✓</div>
+                            <span>Unlimited number of exam retakes</span>
+                        </div>
+                    </div>
+                    <button class="choose-plan-btn" onclick="choosePlan('6months')">Choose Plan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPlan = null;
+
+        function goBack() {
+            console.log("Going back");
+            alert("Going back to previous page");
+            // Add your back navigation logic here
+        }
+
+        function selectPlan(planType) {
+            // Remove previous selection
+            document.querySelectorAll('.pricing-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            document.querySelector(`[data-plan="${planType}"]`).classList.add('selected');
+            selectedPlan = planType;
+            
+            console.log("Selected plan:", planType);
+        }
+
+        function choosePlan(planType) {
+            event.stopPropagation(); // Prevent card click event
+            console.log("Choosing plan:", planType);
+            alert(`You chose the ${planType} plan!`);
+            // Add your plan selection logic here
+        }
+
+        // Add hover effects and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.pricing-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('popular-card')) {
+                        this.style.transform = 'translateY(0) scale(1)';
+                    } else {
+                        this.style.transform = 'translateY(-5px) scale(1.05)';
+                    }
+                });
+            });
+
+            // Initialize popular card position
+            const popularCard = document.querySelector('.popular-card');
+            if (popularCard) {
+                popularCard.style.transform = 'translateY(-5px) scale(1.05)';
+            }
+        });
+    </script>
+</body>
+</html>

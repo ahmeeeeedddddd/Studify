@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studify - Your Learning GPS</title>
+    <!-- Link to Tailwind CSS library -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link to your custom stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="relative" id="home">
+
+    <!-- Header and Navigation -->
+    <header class="absolute top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-orange-500 rounded-full mr-3"></div>
+                <span class="text-2xl font-bold text-[#0d244f]">Studify</span>
+            </div>
+            <!-- Navigation Links -->
+            <nav>
+                <a href="#" class="text-[#c05621] hover:text-orange-700 px-4 transition-colors duration-300">About Us</a>
+                <a href="/signin" class="text-[#dd6b20] hover:text-orange-500 px-4 transition-colors duration-300 font-semibold">Sign In</a>
+                <a href="#" class="text-[#c05621] hover:text-orange-700 px-4 transition-colors duration-300">Contact Us</a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <main class="relative min-h-screen flex items-center z-10">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center">
+                <!-- Left Content -->
+                <div class="lg:w-1/2 text-center lg:text-left mb-10 lg:mb-0">
+                    <p class="text-lg text-blue-500">Welcome to Studify!</p>
+                    <h1 class="text-4xl md:text-6xl font-bold text-[#dd6b20] leading-tight my-4">
+                        Lost in Learning Land? <br> Let us be your GPS
+                    </h1>
+                    <p class="text-slate-600 mb-8 max-w-md mx-auto lg:mx-0">
+                        At Studify, we don’t just help you learn — we build a personalized roadmap just for you. Powered by AI.
+                    </p>
+                    <a class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 inline-block text-center no-underline" href="/register" role="button">
+                    GET STARTED
+                    </a>
+                </div>
+
+                <!-- Right Content Area (empty, to allow background to show) -->
+                <div class="lg:w-1/2 relative h-96">
+                    <!-- This space is intentionally left blank for the background image's illustration -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Link to your JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>

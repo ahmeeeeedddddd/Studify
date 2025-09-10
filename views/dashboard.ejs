@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Studify</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body id="dashboard-page">
+    <!-- Hidden data elements -->
+    <div style="display: none;" id="courses-data">
+        <% if (courses && courses.length > 0) { %>
+            <% courses.forEach((course, index) => { %>
+                <div class="course-data" 
+                     data-id="<%= course.user_course_id %>"
+                     data-title="<%= course.course_title %>"
+                     data-progress="<%= course.progress_percent || 0 %>"
+                     data-days="<%= course.custom_duration_days %>"
+                     data-status="<%= course.status %>"
+                     data-total-tasks="<%= course.total_tasks || 0 %>"
+                     data-completed-tasks="<%= course.completed_tasks || 0 %>">
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+
+    <div style="display: none;" id="user-data" 
+         data-name="<%= user ? user.name : 'Student' %>"
+         data-pp-url="<%= user && user.pp_url ? user.pp_url : '' %>">
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <button class="back-btn" onclick="window.history.back()">
+                    <span class="back-icon">←</span>
+                </button>
+                <div class="logo-icon">📚</div>
+                <div class="logo-text">Studify</div>
+            </div>
+            <div class="user-avatar" onclick="window.location.href='/settings'">
+                <% if (user && user.pp_url) { %>
+                    <img src="<%= user.pp_url %>" alt="Profile" class="avatar-img">
+                <% } else { %>
+                    <div class="avatar-img"></div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome back, <span id="user-name"><%= user ? user.name : 'Student' %></span>!</h1>
+            <p class="welcome-subtitle">Continue your learning journey</p>
+        </div>
+
+        <!-- Courses Section -->
+        <div class="courses-section">
+            <h2 class="section-title">Your Courses</h2>
+            <div class="courses-grid" id="courses-grid">
+                <!-- Courses will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-section" id="stats-section">
+            <!-- Stats will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Course icon determination function
+        function getCourseIconData(courseTitle) {
+            const title = courseTitle.toLowerCase();
+            
+            const categories = {
+                programming: {
+                    keywords: ['javascript', 'python', 'java', 'c++', 'programming', 'coding', 'software'],
+                    icon: '{ }',
+                    class: 'programming'
+                },
+                'machine-learning': {
+                    keywords: ['machine learning', 'ml', 'ai', 'artificial intelligence', 'neural', 'deep learning'],
+                    icon: '🤖',
+                    class: 'machine-learning'
+                },
+                'data-science': {
+                    keywords: ['data science', 'data', 'analytics', 'statistics', 'pandas', 'numpy'],
+                    icon: '📊',
+                    class: 'data-science'
+                },
+                'web-development': {
+                    keywords: ['web', 'html', 'css', 'react', 'vue', 'angular', 'frontend', 'backend'],
+                    icon: '🌐',
+                    class: 'web-development'
+                },
+                mathematics: {
+                    keywords: ['math', 'mathematics', 'calculus', 'algebra', 'geometry'],
+                    icon: '∑',
+                    class: 'mathematics'
+                },
+                language: {
+                    keywords: ['english', 'spanish', 'french', 'german', 'language', 'grammar'],
+                    icon: '📚',
+                    class: 'language'
+                },
+                design: {
+                    keywords: ['design', 'ui', 'ux', 'photoshop', 'graphic', 'visual'],
+                    icon: '🎨',
+                    class: 'design'
+                },
+                business: {
+                    keywords: ['business', 'marketing', 'management', 'finance', 'economics'],
+                    icon: '💼',
+                    class: 'business'
+                }
+            };
+            
+            // Check if title matches any category
+            for (const [category, data] of Object.entries(categories)) {
+                if (data.keywords.some(keyword => title.includes(keyword))) {
+                    return {
+                        type: 'abstract',
+                        icon: data.icon,
+                        class: data.class
+                    };
+                }
+            }
+            
+            // Default: return first letter of course title
+            return {
+                type: 'initial',
+                icon: courseTitle.charAt(0).toUpperCase(),
+                class: 'default'
+            };
+        }
+
+        // Create course card HTML
+        function createCourseCard(courseData) {
+            const iconData = getCourseIconData(courseData.title);
+            
+            const iconHTML = iconData.type === 'initial' 
+                ? `<div class="course-initial">${iconData.icon}</div>`
+                : `<div class="abstract-icon">${iconData.icon}</div>`;
+            
+            return `
+                <div class="course-card" onclick="window.location.href='/roadmap?id=${courseData.id}'">
+                    <div class="course-icon ${iconData.class}">
+                        ${iconHTML}
+                    </div>
+                    <div class="course-info">
+                        <h3 class="course-title">${courseData.title}</h3>
+                        <div class="course-progress">
+                            <div class="progress-text">${courseData.progress}% Complete</div>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill-small" style="width: ${courseData.progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="course-meta">
+                            <span>${courseData.days} days</span>
+                            <span class="course-status">${courseData.status}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create add course card
+        function createAddCourseCard() {
+            return `
+                <div class="course-card add-course-card" onclick="window.location.href='/course'">
+                    <div class="add-course-icon">+</div>
+                    <div class="add-course-text">Create New Course</div>
+                </div>
+            `;
+        }
+
+        // Create stats cards
+        function createStatsCards(courses) {
+            if (!courses || courses.length === 0) {
+                return `
+                    <div class="stat-card">
+                        <div class="stat-circle">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Courses</div>
+                        </div>
+                        <div class="stat-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot all-courses"></div>
+                                <span>Get started by creating your first course!</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const totalCourses = courses.length;
+            const totalTasks = courses.reduce((sum, c) => sum + parseInt(c.totalTasks || 0), 0);
+            const completedTasks = courses.reduce((sum, c) => sum + parseInt(c.completedTasks || 0), 0);
+            const averageProgress = Math.round(courses.reduce((sum, c) => sum + parseInt(c.progress || 0), 0) / totalCourses);
+
+            return `
+                <div class="stat-card">
+                    <div class="stat-circle">
+                        <div class="stat-number">${totalCourses}</div>
+                        <div class="stat-label">Total Courses</div>
+                    </div>
+                    <div class="stat-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot all-courses"></div>
+                            <span>All Courses</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-circle">
+                        <div class="stat-number">${averageProgress}%</div>
+                        <div class="stat-label">Avg Progress</div>
+                    </div>
+                    <div class="stat-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot progress"></div>
+                            <span>Overall Progress</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-circle">
+                        <div class="stat-number">${completedTasks}</div>
+                        <div class="stat-label">Tasks Done</div>
+                    </div>
+                    <div class="stat-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot general"></div>
+                            <span>Out of ${totalTasks} total</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Read data from hidden elements
+        function readCourseData() {
+            const courseElements = document.querySelectorAll('.course-data');
+            const courses = [];
+            
+            courseElements.forEach(element => {
+                courses.push({
+                    id: element.dataset.id,
+                    title: element.dataset.title,
+                    progress: parseInt(element.dataset.progress || 0),
+                    days: element.dataset.days,
+                    status: element.dataset.status,
+                    totalTasks: element.dataset.totalTasks,
+                    completedTasks: element.dataset.completedTasks
+                });
+            });
+            
+            return courses;
+        }
+
+        // Initialize dashboard when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const coursesGrid = document.getElementById('courses-grid');
+            const statsSection = document.getElementById('stats-section');
+            const courses = readCourseData();
+
+            // Populate courses grid
+            let coursesHTML = '';
+            if (courses && courses.length > 0) {
+                coursesHTML = courses.map(course => createCourseCard(course)).join('');
+            }
+            coursesHTML += createAddCourseCard();
+            coursesGrid.innerHTML = coursesHTML;
+
+            // Populate stats section
+            statsSection.innerHTML = createStatsCards(courses);
+
+            // Add smooth scroll animations for progress bars
+            setTimeout(() => {
+                const progressBars = document.querySelectorAll('.progress-fill-small');
+                progressBars.forEach(bar => {
+                    const targetWidth = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = targetWidth;
+                    }, 100);
+                });
+            }, 50);
+
+            console.log('Dashboard loaded successfully');
+        });
+
+        // Optional: Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'c' && e.ctrlKey) {
+                window.location.href = '/course';
+            }
+        });
+    </script>
+</body>
+</html>

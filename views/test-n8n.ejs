@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>n8n Connectivity Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #5a6fd8;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .result {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    .success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    .loading {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 n8n Connectivity Diagnostics</h1>
+    <p>This page helps diagnose connectivity issues with the n8n service.</p>
+    
+    <div>
+      <button onclick="testBackendConnection()">Test Backend Connection</button>
+      <button onclick="testN8nConnectivity()">Test n8n Service</button>
+      <button onclick="testDirectN8n()">Test Direct n8n Call</button>
+      <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+  </div>
+
+  <script>
+    function addResult(message, type = 'info') {
+      const results = document.getElementById('results');
+      const div = document.createElement('div');
+      div.className = `result ${type}`;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      results.appendChild(div);
+      results.scrollTop = results.scrollHeight;
+    }
+
+    function clearResults() {
+      document.getElementById('results').innerHTML = '';
+    }
+
+    async function testBackendConnection() {
+      addResult('Testing backend connection...', 'loading');
+      try {
+        const response = await fetch('/test-auth');
+        const data = await response.json();
+        
+        if (response.ok) {
+          addResult(`✅ Backend connection successful. User: ${data.user?.email || 'Unknown'}`, 'success');
+        } else {
+          addResult(`❌ Backend connection failed: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        addResult(`💥 Backend connection error: ${error.message}`, 'error');
+      }
+    }
+
+    async function testN8nConnectivity() {
+      addResult('Testing n8n connectivity via backend...', 'loading');
+      try {
+        const response = await fetch('/api/test-n8n', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addResult(`✅ n8n connectivity test passed! Status: ${data.status}`, 'success');
+        } else {
+          addResult(`❌ n8n connectivity test failed: ${data.error}`, 'error');
+          if (data.details) {
+            addResult(`Details: ${JSON.stringify(data.details, null, 2)}`, 'info');
+          }
+        }
+      } catch (error) {
+        addResult(`💥 n8n connectivity test error: ${error.message}`, 'error');
+      }
+    }
+
+    async function testDirectN8n() {
+      addResult('Testing direct n8n call from browser...', 'loading');
+      try {
+        const testPayload = {
+          course: "Browser Test Course",
+          durationType: "recommended",
+          customDays: null
+        };
+
+        const response = await fetch('https://mhlbya.app.n8n.cloud/webhook-test/course-selector', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(testPayload)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          addResult('✅ Direct n8n call successful!', 'success');
+          addResult(`Response preview: ${JSON.stringify(data).substring(0, 200)}...`, 'info');
+        } else {
+          addResult(`❌ Direct n8n call failed: HTTP ${response.status}`, 'error');
+          const errorText = await response.text();
+          addResult(`Error response: ${errorText.substring(0, 200)}...`, 'info');
+        }
+      } catch (error) {
+        addResult(`💥 Direct n8n call error: ${error.message}`, 'error');
+        
+        // Check for CORS issues
+        if (error.message.includes('CORS') || error.message.includes('fetch')) {
+          addResult('ℹ️ This might be a CORS issue - direct browser calls to n8n may be blocked', 'info');
+          addResult('ℹ️ The backend should handle n8n calls instead of direct browser calls', 'info');
+        }
+      }
+    }
+
+    // Auto-run basic tests when page loads
+    window.addEventListener('DOMContentLoaded', function() {
+      addResult('🚀 Diagnostics page loaded. Click buttons to run tests.', 'info');
+      
+      // Auto-test backend connection
+      setTimeout(testBackendConnection, 1000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studify - Settings</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="settings">
+        <!-- Back Button -->
+        <div class="back-button">
+            <div class="back-circle" onclick="goBack()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 12H5M12 19L5 12L12 5" stroke="#FF5722" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Logo Section -->
+        <div class="logo-container">
+            <div class="logo-circle"></div>
+            <span class="logo-text">Studify</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="page-title">Settings</h1>
+            
+
+            <!-- Profile Section -->
+        <div class="profile-section">
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <img id="profile-image" src="<%= user && user.pp_url ? user.pp_url : '/images/default-avatar.png' %>" alt="Profile Picture">
+                    <div class="upload-overlay" onclick="document.getElementById('photo-upload').click()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="13" r="4" stroke="white" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <input type="file" id="photo-upload" accept="image/*" style="display: none;" onchange="uploadPhoto(event)">
+                </div>
+                
+                    <div class="profile-info">
+                        <div class="profile-field">
+                            <label for="profile-name">Name</label>
+                            <input type="text" id="profile-name" value="<%= user ? user.name : '' %>" placeholder="Your name">
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label for="profile-email">Email</label>
+                            <input type="email" id="profile-email" value="<%= user ? user.email : '' %>" placeholder="your@email.com">
+                        </div>
+                        
+                        <div class="profile-actions">
+                            <button class="save-btn" onclick="saveProfile()">Save Changes</button>
+                            <button class="cancel-btn" onclick="resetProfile()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Settings Options -->
+            <div class="settings-container">
+                <!-- Privacy Setting -->
+                <div class="setting-item" onclick="navigateTo('privacy')">
+                    <div class="setting-left">
+                        <div class="setting-icon privacy-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 12L11 14L15 10" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <span class="setting-text">Privacy</span>
+                    </div>
+                    <div class="arrow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18L15 12L9 6" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Language Setting -->
+                <div class="setting-item" onclick="navigateTo('language')">
+                    <div class="setting-left">
+                        <div class="setting-icon language-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="#4A4A8A" stroke-width="2"/>
+                                <path d="M2 12H22" stroke="#4A4A8A" stroke-width="2"/>
+                                <path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" stroke="#4A4A8A" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <span class="setting-text">Language</span>
+                    </div>
+                    <div class="arrow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18L15 12L9 6" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Notifications Setting -->
+                <div class="setting-item" onclick="navigateTo('notifications')">
+                    <div class="setting-left">
+                        <div class="setting-icon notifications-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <span class="setting-text">Notifications</span>
+                    </div>
+                    <div class="arrow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18L15 12L9 6" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Help Setting -->
+                <div class="setting-item" onclick="navigateTo('help')">
+                    <div class="setting-left">
+                        <div class="setting-icon help-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="#4A4A8A" stroke-width="2"/>
+                                <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40913C11.0108 7.05016 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 17H12.01" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <span class="setting-text">Help</span>
+                    </div>
+                    <div class="arrow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18L15 12L9 6" stroke="#4A4A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer text -->
+        <div class="footer-text">
+            logout page
+        </div>
+    </div>
+
+    <script>
+        let originalName = '';
+        let originalEmail = '';
+        let originalPhoto = '';
+
+        function navigateTo(setting) {
+            console.log("Navigating to:", setting);
+            alert(`Opening ${setting} settings`);
+            // Add your navigation logic here
+        }
+
+        // Add hover effects and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+
+            originalName = document.getElementById('profile-name')?.value || '';
+            originalEmail = document.getElementById('profile-email')?.value || '';
+            originalPhoto = document.getElementById('profile-image')?.src || '';
+
+
+            const settingItems = document.querySelectorAll('.setting-item');
+            
+            settingItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(10px)';
+                    this.style.backgroundColor = 'rgba(74, 74, 138, 0.05)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                    this.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                });
+            });
+
+            // Add click animation
+            settingItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.style.transform = 'translateX(5px) scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateX(0) scale(1)';
+                    }, 150);
+                });
+            });
+        });
+
+
+        async function uploadPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file');
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size should be less than 5MB');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('photo', file);
+            
+            try {
+                const response = await fetch('/api/upload-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error('Upload failed');
+                
+                const result = await response.json();
+                
+                // Update profile image
+                document.getElementById('profile-image').src = result.photoUrl;
+                
+                console.log('Photo uploaded successfully');
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Failed to upload photo. Please try again.');
+            }
+        }
+
+
+        // Save profile function
+        // Replace your saveProfile function with this debugging version:
+        async function saveProfile() {
+            const name = document.getElementById('profile-name').value.trim();
+            const email = document.getElementById('profile-email').value.trim();
+            
+            console.log('Attempting to save:', { name, email });
+            
+            if (!name || !email) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            try {
+                console.log('Making API call to /api/update-profile...');
+                
+                const response = await fetch('/api/update-profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error('API Error:', error);
+                    throw new Error(error.message || 'Failed to update profile');
+                }
+                
+                const result = await response.json();
+                console.log('API Success result:', result);
+                
+                originalName = name;
+                originalEmail = email;
+                
+                alert('Profile updated successfully!');
+                
+            } catch (error) {
+                console.error('Save profile error:', error);
+                alert(error.message || 'Failed to update profile. Please try again.');
+            }
+        }
+
+        function resetProfile() {
+            document.getElementById('profile-name').value = originalName;
+            document.getElementById('profile-email').value = originalEmail;
+            document.getElementById('profile-image').src = originalPhoto;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+
+    </script>
+</body>
+</html>
